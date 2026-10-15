@@ -14,6 +14,8 @@ const T: [string, string, string, string, string][] = [
   ["Interested in a deposito, what is the bunga rate?", "Sales", "Deposits", "Sales Follow-up", "dm"],
   ["Biaya admin bulan ini naik tanpa pemberitahuan", "Complaint", "Fees", "Complaint Ticket", "email"],
   ["Mau apply kredit UMKM, bunga berapa?", "Sales", "Financing", "Sales Follow-up", "dm"],
+  ["Tolong tutup rekening saya ya, sudah tidak dipakai", "Request", "Closure", "Admin Follow-up", "chat"],
+  ["Mohon blokir sementara akun mobile banking saya", "Request", "Block", "Admin Follow-up", "dm"],
 ];
 const channels = ["WhatsApp", "Instagram", "Email", "Twitter", "Google Review"];
 const q = (s: string) => `"${s.replace(/"/g, '""')}"`;
@@ -22,7 +24,7 @@ for (let i = 0; i < n; i++) {
   const [text, intent, cat, action, type] = T[i % T.length];
   const ch = channels[i % channels.length];
   const t = ch === "Google Review" || ch === "Twitter" ? "comment" : type;
-  const act = t === "comment" && ["Sales Follow-up", "Complaint Ticket", "FAQ"].includes(action) ? "Public-to-Private" : action;
+  const act = t === "comment" && ["Sales Follow-up", "Complaint Ticket", "FAQ", "Admin Follow-up"].includes(action) ? "Public-to-Private" : action;
   lines.push([`M${String(i + 1).padStart(5, "0")}`, ch, q(`${text} (#${i + 1})`), t, "", "unknown", intent, cat, act].join(","));
 }
 fs.writeFileSync(out, "﻿" + lines.join("\n"));

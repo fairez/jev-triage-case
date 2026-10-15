@@ -11,6 +11,7 @@ const resp = (o: { intent?: string; conf?: number; action?: string; sales?: numb
     sales_opportunity: { probability: o.sales ?? 0 },
     complaint_indicator: { probability: o.complaint ?? 0 },
     complaint_category: { value: "Payment", confidence: 0.9 },
+    request_category: { value: "Block", confidence: 0.9 },
     sales_category: { value: "Financing", confidence: 0.9 },
     urgency: { value: "Routine", confidence: 0.9 },
     security_concern: { probability: o.security ?? 0 },
@@ -59,4 +60,14 @@ test("macro-F1", () => {
   ]);
   assert.equal(m.accuracy, 0.75);
   assert.ok(Math.abs(m.macroF1! - (2 / 3 + 0.8) / 2) < 1e-9);
+});
+test("request intent routes to admin follow-up with request category", () => {
+  const r = applyPolicy({ response: resp({ intent: "Request", action: "Admin Follow-up" }), threshold: 0.8 });
+  assert.equal(r.finalAction, "Admin Follow-up");
+  assert.equal(r.category, "Block");
+  assert.ok(r.simulated.some((s) => s.type === "Admin Follow-up"));
+});
+test("public request moves to private channel", () => {
+  const r = applyPolicy({ response: resp({ intent: "Request", action: "Admin Follow-up" }), messageType: "comment", threshold: 0.8 });
+  assert.equal(r.finalAction, "Public-to-Private");
 });

@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, SALES_CATEGORIES } from "@/lib/catalog";
+import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, REQUEST_CATEGORIES, SALES_CATEGORIES } from "@/lib/catalog";
 import { getJob } from "@/lib/jobs";
 import { shapeRow } from "@/lib/rows";
 import { fail, guard, json } from "@/lib/http";
@@ -23,7 +23,7 @@ export const PATCH = guard(async (req: Request, { params }: { params: { id: stri
   if (!r) return fail("Row not found", 404);
   const b = (await req.json()) as { intent?: string; category?: string; action?: string; clear?: boolean };
   if (b.clear) { db().prepare("UPDATE rows SET correction = NULL WHERE pk = ?").run(r.pk); return json({ ok: true }); }
-  const cats: readonly string[] = [...COMPLAINT_CATEGORIES, ...SALES_CATEGORIES];
+  const cats: readonly string[] = [...COMPLAINT_CATEGORIES, ...REQUEST_CATEGORIES, ...SALES_CATEGORIES];
   if (b.intent && !(INTENTS as readonly string[]).includes(b.intent)) return fail("Invalid intent");
   if (b.category && !cats.includes(b.category)) return fail("Invalid category");
   if (b.action && !(ACTIONS as readonly string[]).includes(b.action)) return fail("Invalid action");

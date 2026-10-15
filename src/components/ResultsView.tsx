@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
-import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, SALES_CATEGORIES } from "@/lib/catalog";
+import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, REQUEST_CATEGORIES, SALES_CATEGORIES } from "@/lib/catalog";
 import { Badge, Btn, Card, Metrics, Table, api, ms, patch, post, money, getCurrency } from "./ui";
 
 const STATUSES = ["pending", "running", "success", "failed", "cancelled"];
@@ -134,7 +134,7 @@ function Detail({ jobId, pk, sim, onClose }: { jobId: string; pk: number; sim: b
             {r.correction && <div className="mb-2 text-xs text-indigo-700">Current: {JSON.stringify({ ...r.correction, at: undefined })} <button className="underline" onClick={async () => { await patch(`/api/jobs/${jobId}/rows/${pk}`, { clear: true }); load(); }}>clear</button></div>}
             <div className="flex flex-wrap gap-2">
               <select className={field} value={c.intent} onChange={(e) => setC({ ...c, intent: e.target.value })}><option value="">Intent…</option>{INTENTS.map((x) => <option key={x}>{x}</option>)}</select>
-              <select className={field} value={c.category} onChange={(e) => setC({ ...c, category: e.target.value })}><option value="">Category…</option>{[...new Set([...COMPLAINT_CATEGORIES, ...SALES_CATEGORIES])].map((x) => <option key={x}>{x}</option>)}</select>
+              <select className={field} value={c.category} onChange={(e) => setC({ ...c, category: e.target.value })}><option value="">Category…</option>{[...new Set([...COMPLAINT_CATEGORIES, ...REQUEST_CATEGORIES, ...SALES_CATEGORIES])].map((x) => <option key={x}>{x}</option>)}</select>
               <select className={field} value={c.action} onChange={(e) => setC({ ...c, action: e.target.value })}><option value="">Action…</option>{ACTIONS.map((x) => <option key={x}>{x}</option>)}</select>
               <Btn disabled={!c.intent && !c.category && !c.action} onClick={save}>Save</Btn>
             </div>

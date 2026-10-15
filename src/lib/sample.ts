@@ -12,6 +12,8 @@ const rows: Record<string, string>[] = [
   ["1008", "Email", "Saya tertarik deposito, tapi biaya admin rekening saya bulan lalu naik tanpa pemberitahuan. Kenapa?", "email", "", "existing", "Complaint", "Fees", "Complaint Ticket"],
   ["1009", "Google Review", "Mau apply kredit UMKM, bunga berapa ya?", "review", "", "prospect", "Sales", "Financing", "Public-to-Private"],
   ["1010", "WhatsApp", "kartu debit saya hilang, tolong blokir sekarang", "chat", "Customer: halo\nAgent: ada yang bisa dibantu?", "existing", "Complaint", "Card", "Security Escalation"],
+  ["1013", "WhatsApp", "Tolong tutup rekening tabungan saya, saya sudah tidak pakai lagi", "chat", "", "existing", "Request", "Closure", "Admin Follow-up"],
+  ["1014", "Instagram", "Min, tolong blokir akun mobile banking saya sementara, HP saya mau diservis", "dm", "", "existing", "Request", "Block", "Admin Follow-up"],
   ["1011", "WhatsApp", "ok", "chat", "", "unknown", "Other", "None", "Human Review"],
   ["1012", "Instagram", "Is there a promo for new account opening this month?", "dm", "", "prospect", "Sales", "Account Opening", "Sales Follow-up"],
 ].map((r) => Object.fromEntries(ALL_COLUMNS.map((c, i) => [c, r[i] ?? ""])));

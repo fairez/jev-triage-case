@@ -19,7 +19,7 @@ export interface PolicyOutput {
   simulated: { type: string; detail: string }[];
 }
 
-const PRIVATE_ONLY = new Set(["Sales Follow-up", "Complaint Ticket", "Request Information", "FAQ"]);
+const PRIVATE_ONLY = new Set(["Sales Follow-up", "Complaint Ticket", "Admin Follow-up", "Request Information", "FAQ"]);
 const SECURITY_THRESHOLD = 0.5;
 const MIXED_THRESHOLD = 0.5;
 
@@ -35,6 +35,7 @@ export function applyPolicy({ response, messageType, threshold }: PolicyInput): 
   const category =
     intent === "Sales" ? (j.sales_category?.value ?? "None")
     : intent === "Complaint" ? (j.complaint_category?.value ?? "None")
+    : intent === "Request" ? (j.request_category?.value ?? "None")
     : complaintP >= MIXED_THRESHOLD && (j.complaint_category?.value ?? "None") !== "None" ? j.complaint_category!.value!
     : (j.sales_category?.value ?? "None");
 
@@ -70,6 +71,7 @@ export function applyPolicy({ response, messageType, threshold }: PolicyInput): 
   const detail: Record<string, string> = {
     "Security Escalation": "Security team alert created (simulated)",
     "Complaint Ticket": "Complaint ticket created (simulated)",
+    "Admin Follow-up": "Request routed to the responsible admin team for follow-up (simulated)",
     "Sales Follow-up": "CRM lead routed to sales (simulated)",
     "Public-to-Private": "Invitation to continue via DM drafted, not sent (simulated)",
     "Human Review": "Added to human review queue (simulated)",

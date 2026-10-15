@@ -3,7 +3,7 @@
 import { JevCallResult, JevError, TsAnswer, TsResponse } from "./types";
 import { normalizeResponse } from "./normalize";
 import type { JevRequestBody } from "./client";
-import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, SALES_CATEGORIES, URGENCIES } from "../catalog";
+import { ACTIONS, COMPLAINT_CATEGORIES, INTENTS, REQUEST_CATEGORIES, SALES_CATEGORIES, URGENCIES } from "../catalog";
 
 const has = (t: string, words: string[]) => words.some((w) => t.includes(w));
 
@@ -18,9 +18,11 @@ function classify(text: string) {
   const complaint = has(t, ["kecewa", "komplain", "complain", "gagal", "error", "tidak bisa", "ga bisa", "gak bisa", "belum masuk", "potongan", "biaya", "lambat", "slow", "failed", "stuck", "refund", "worst", "buruk", "charged", "double"]);
   const sales = has(t, ["buka rekening", "open account", "mau daftar", "deposito", "pinjaman", "kredit", "kta", "loan", "interested", "tertarik", "promo", "bunga", "suku bunga", "apply", "bisnis", "umkm", "business account"]);
   const spam = has(t, ["http://", "https://", "klik link", "hadiah", "giveaway", "judi", "slot", "follow back", "subscribe"]);
+  const request = has(t, ["tolong blokir", "blokir", "block my", "please block", "tolong tutup", "tutup rekening", "tutup akun", "close my", "please close", "nonaktifkan", "deactivate", "aktifkan kembali", "buka blokir", "unblock", "reactivate", "ganti nomor", "ubah data", "update data", "naikkan limit", "turunkan limit", "ubah limit", "increase my limit", "minta mutasi", "surat keterangan", "send statement"]);
   const feedback = has(t, ["saran", "suggest", "feedback", "terima kasih", "thanks", "great", "mantap", "bagus"]);
   let intent: string = "Inquiry";
   if (spam && !security) intent = "Spam";
+  else if (request && !security) intent = "Request";
   else if (security || complaint) intent = "Complaint";
   else if (sales) intent = "Sales";
   else if (feedback) intent = "Feedback";
@@ -29,12 +31,14 @@ function classify(text: string) {
   let ccat = "None";
   if (security) ccat = "Fraud";
   else if (complaint) ccat = has(t, ["transfer", "payment", "bayar", "top up", "topup", "qris"]) ? "Payment" : has(t, ["kartu", "card", "atm"]) ? "Card" : has(t, ["aplikasi", "app", "login", "update"]) ? "App" : has(t, ["biaya", "fee", "potongan", "admin"]) ? "Fees" : has(t, ["rekening", "account", "saldo"]) ? "Account" : has(t, ["pinjaman", "kredit", "loan"]) ? "Lending" : "Service";
+  let rcat = "None";
+  if (request) rcat = has(t, ["buka blokir", "unblock", "aktifkan kembali", "reactivate"]) ? "Reactivation" : has(t, ["blokir", "block", "nonaktifkan", "deactivate"]) ? "Block" : has(t, ["tutup", "close"]) ? "Closure" : has(t, ["limit"]) ? "Limit Change" : has(t, ["mutasi", "surat", "statement"]) ? "Document" : has(t, ["ganti nomor", "ubah data", "update data"]) ? "Data Change" : "Other";
   let scat = "None";
   if (sales) scat = has(t, ["deposito", "tabungan"]) ? "Deposits" : has(t, ["pinjaman", "kredit", "loan", "kta"]) ? "Financing" : has(t, ["bisnis", "umkm", "business"]) ? "Business Banking" : has(t, ["rekening", "account"]) ? "Account Opening" : "Other";
 
   const urgency = security ? "Critical" : complaint ? (has(t, ["urgent", "segera", "hari ini", "sudah 3", "berhari"]) ? "High" : "Medium") : "Routine";
-  const action = security ? "Security Escalation" : complaint ? "Complaint Ticket" : sales ? "Sales Follow-up" : spam ? "No Action" : intent === "Inquiry" ? "FAQ" : feedback ? "No Action" : "Human Review";
-  return { intent, ccat, scat, urgency, action, security, complaint, sales };
+  const action = security ? "Security Escalation" : complaint ? "Complaint Ticket" : request ? "Admin Follow-up" : sales ? "Sales Follow-up" : spam ? "No Action" : intent === "Inquiry" ? "FAQ" : feedback ? "No Action" : "Human Review";
+  return { intent, ccat, rcat, scat, urgency, action, security, complaint, sales, request };
 }
 
 export async function mockCall(body: JevRequestBody, timeoutMs: number): Promise<JevCallResult> {
@@ -63,6 +67,7 @@ export async function mockCall(body: JevRequestBody, timeoutMs: number): Promise
       sales_opportunity: noul(c.sales),
       complaint_indicator: noul(c.complaint || c.security),
       complaint_category: choice(COMPLAINT_CATEGORIES, c.ccat),
+      request_category: choice(REQUEST_CATEGORIES, c.rcat),
       sales_category: choice(SALES_CATEGORIES, c.scat),
       urgency: {
         type: "score",

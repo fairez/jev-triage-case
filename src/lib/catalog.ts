@@ -1,11 +1,12 @@
 // Decision catalog: the questions sent to Jev in every request (spec §4).
-export const CATALOG_VERSION = "triage-catalog-2.0";
+export const CATALOG_VERSION = "triage-catalog-2.1";
 
-export const INTENTS = ["Sales", "Complaint", "Inquiry", "Feedback", "Spam", "Other"] as const;
+export const INTENTS = ["Sales", "Complaint", "Inquiry", "Request", "Feedback", "Spam", "Other"] as const;
 export const COMPLAINT_CATEGORIES = ["Payment", "Account", "App", "Card", "Fees", "Lending", "Fraud", "Service", "Other", "None"] as const;
 export const SALES_CATEGORIES = ["Account Opening", "Deposits", "Payments", "Financing", "Business Banking", "Other", "None"] as const;
+export const REQUEST_CATEGORIES = ["Block", "Closure", "Reactivation", "Data Change", "Limit Change", "Document", "Other", "None"] as const;
 export const URGENCIES = ["Routine", "Medium", "High", "Critical"] as const;
-export const ACTIONS = ["Sales Follow-up", "Complaint Ticket", "Security Escalation", "Request Information", "FAQ", "Public-to-Private", "Human Review", "No Action"] as const;
+export const ACTIONS = ["Sales Follow-up", "Complaint Ticket", "Security Escalation", "Request Information", "FAQ", "Admin Follow-up", "Public-to-Private", "Human Review", "No Action"] as const;
 
 export type Intent = (typeof INTENTS)[number];
 export type Action = (typeof ACTIONS)[number];
@@ -27,6 +28,7 @@ export const QUESTIONS: Record<string, QuestionDef> = {
       Sales: "The customer wants to open, buy, apply for or learn about a banking product",
       Complaint: "The customer reports a problem, failure, unfair charge or dissatisfaction",
       Inquiry: "The customer asks a question or requests information or help",
+      Request: "The customer asks the bank/admin to perform an action on their account or product, such as block, close, reactivate or change something",
       Feedback: "Praise, suggestion or general opinion with no request or problem",
       Spam: "Unsolicited promotion, scam link or irrelevant content",
       Other: "None of the above, or too little content to tell",
@@ -71,6 +73,20 @@ export const QUESTIONS: Record<string, QuestionDef> = {
       None: "The message shows no sales opportunity",
     },
   },
+  request_category: {
+    type: "choice",
+    instructions: `If the customer is asking the bank or an admin to perform an action (not just asking a question), what kind of request is it? Answer None if there is no such request. ${CTX}`,
+    criteria: {
+      Block: "Block, freeze or suspend a card, account, wallet or access (e.g. \"tolong blokir\")",
+      Closure: "Close or terminate an account, card, product, subscription or service (e.g. \"tolong tutup rekening\")",
+      Reactivation: "Unblock, reactivate or reopen a blocked, dormant or closed account, card or access",
+      "Data Change": "Update personal data, phone number, email, address, PIN or password reset",
+      "Limit Change": "Raise or lower a transaction, card or credit limit",
+      Document: "Send or issue a statement, certificate, receipt or other document",
+      Other: "An action request that fits none of the types above",
+      None: "The message contains no request for the bank to perform an action",
+    },
+  },
   // Score criteria are ordered levels; the name before ":" is mapped back to URGENCIES.
   urgency: {
     type: "score",
@@ -94,6 +110,7 @@ export const QUESTIONS: Record<string, QuestionDef> = {
       "Sales Follow-up": "A sales team member should contact the customer about a product",
       "Complaint Ticket": "Open a complaint ticket for the service team",
       "Security Escalation": "Escalate immediately to the security or fraud team",
+      "Admin Follow-up": "The customer asks for an action only an admin can perform (block, close, reactivate, change data or limit); route to the responsible admin",
       "Request Information": "More details are needed from the customer before acting",
       FAQ: "A standard FAQ answer resolves it",
       "Public-to-Private": "The message is public and the conversation should move to a private channel",
