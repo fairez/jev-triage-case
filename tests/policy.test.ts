@@ -71,3 +71,13 @@ test("public request moves to private channel", () => {
   const r = applyPolicy({ response: resp({ intent: "Request", action: "Admin Follow-up" }), messageType: "comment", threshold: 0.8 });
   assert.equal(r.finalAction, "Public-to-Private");
 });
+test("FAQ in a public comment stays FAQ", () => {
+  assert.equal(applyPolicy({ response: resp({ intent: "Inquiry", action: "FAQ" }), messageType: "comment", threshold: 0.4 }).finalAction, "FAQ");
+});
+test("spam is never escalated as security", () => {
+  const r = applyPolicy({ response: resp({ intent: "Spam", action: "Security Escalation", security: 0.9 }), threshold: 0.4 });
+  assert.equal(r.finalAction, "No Action");
+});
+test("inquiry carries no category", () => {
+  assert.equal(applyPolicy({ response: resp({ intent: "Inquiry", action: "FAQ", complaint: 0.9 }), threshold: 0.4 }).category, "None");
+});

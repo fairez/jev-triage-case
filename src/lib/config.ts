@@ -18,7 +18,7 @@ export function defaultConfig(): JobConfig {
   return {
     model: "jev-latest",
     concurrency: 5,
-    confidenceThreshold: 0.8,
+    confidenceThreshold: 0.4,
     maxRetries: 3,
     timeoutMs: 10_000,
     inputPricePerM: 0.042,

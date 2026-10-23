@@ -19,7 +19,7 @@ export interface PolicyOutput {
   simulated: { type: string; detail: string }[];
 }
 
-const PRIVATE_ONLY = new Set(["Sales Follow-up", "Complaint Ticket", "Admin Follow-up", "Request Information", "FAQ"]);
+const PRIVATE_ONLY = new Set(["Sales Follow-up", "Complaint Ticket", "Admin Follow-up", "Request Information"]);
 const SECURITY_THRESHOLD = 0.5;
 const MIXED_THRESHOLD = 0.5;
 
@@ -32,12 +32,12 @@ export function applyPolicy({ response, messageType, threshold }: PolicyInput): 
   const complaintP = j.complaint_indicator?.probability ?? 0;
   const salesP = j.sales_opportunity?.probability ?? 0;
   const securityP = j.security_concern?.probability ?? 0;
+  // Only intents that carry a category get one; Inquiry, Feedback, Spam and Other are None.
   const category =
     intent === "Sales" ? (j.sales_category?.value ?? "None")
     : intent === "Complaint" ? (j.complaint_category?.value ?? "None")
     : intent === "Request" ? (j.request_category?.value ?? "None")
-    : complaintP >= MIXED_THRESHOLD && (j.complaint_category?.value ?? "None") !== "None" ? j.complaint_category!.value!
-    : (j.sales_category?.value ?? "None");
+    : "None";
 
   const notes: string[] = [];
   const simulated: { type: string; detail: string }[] = [];
@@ -47,15 +47,19 @@ export function applyPolicy({ response, messageType, threshold }: PolicyInput): 
   const isPublic = PUBLIC_MESSAGE_TYPES.includes((messageType ?? "").toLowerCase());
   const mixed = salesP >= MIXED_THRESHOLD && complaintP >= MIXED_THRESHOLD;
 
-  if (securityP >= SECURITY_THRESHOLD) {
-    action = "Security Escalation";
-    notes.push(`Security concern ${securityP.toFixed(2)} >= ${SECURITY_THRESHOLD}: escalate`);
-  } else if (intent === "Spam" && action !== "Human Review") {
+  // Spam is unsolicited promotion, not a customer incident, so it never escalates as security.
+  if (intent === "Spam" && action !== "Human Review") {
     action = "No Action";
     notes.push("Spam: no action");
+  } else if (securityP >= SECURITY_THRESHOLD) {
+    action = "Security Escalation";
+    notes.push(`Security concern ${securityP.toFixed(2)} >= ${SECURITY_THRESHOLD}: escalate`);
   } else if (confidence !== null && confidence < threshold) {
     action = "Human Review";
     notes.push(`Intent confidence ${confidence.toFixed(2)} < threshold ${threshold}: human review`);
+  } else if (intent === "Other" && action === "No Action") {
+    action = "Human Review";
+    notes.push("Other intent: nothing to act on, human review");
   } else if (mixed && action !== "Human Review") {
     action = "Complaint Ticket";
     notes.push("Mixed intent: complaint handled first, sales follow-up queued");

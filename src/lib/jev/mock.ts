@@ -30,7 +30,7 @@ function classify(text: string) {
 
   let ccat = "None";
   if (security) ccat = "Fraud";
-  else if (complaint) ccat = has(t, ["transfer", "payment", "bayar", "top up", "topup", "qris"]) ? "Payment" : has(t, ["kartu", "card", "atm"]) ? "Card" : has(t, ["aplikasi", "app", "login", "update"]) ? "App" : has(t, ["biaya", "fee", "potongan", "admin"]) ? "Fees" : has(t, ["rekening", "account", "saldo"]) ? "Account" : has(t, ["pinjaman", "kredit", "loan"]) ? "Lending" : "Service";
+  else if (complaint) ccat = has(t, ["transfer", "payment", "bayar", "top up", "topup", "qris"]) ? "Payment" : has(t, ["kartu", "card", "atm"]) ? "Card" : has(t, ["aplikasi", "app", "login", "update"]) ? "App" : has(t, ["biaya", "fee", "potongan", "admin"]) ? "Fees" : has(t, ["rekening", "account", "saldo"]) ? "Account" : has(t, ["pinjaman", "kredit", "loan"]) ? "Financing" : "Service";
   let rcat = "None";
   if (request) rcat = has(t, ["buka blokir", "unblock", "aktifkan kembali", "reactivate"]) ? "Reactivation" : has(t, ["blokir", "block", "nonaktifkan", "deactivate"]) ? "Block" : has(t, ["tutup", "close"]) ? "Closure" : has(t, ["limit"]) ? "Limit Change" : has(t, ["mutasi", "surat", "statement"]) ? "Document" : has(t, ["ganti nomor", "ubah data", "update data"]) ? "Data Change" : "Other";
   let scat = "None";
